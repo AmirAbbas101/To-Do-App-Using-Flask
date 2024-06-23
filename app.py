@@ -27,7 +27,10 @@ datetoday2 = date.today().strftime("%d-%B-%Y")
 # Function to create database and tables
 def create_tables():
     with app.app_context():
-        db.create_all()
+        try:
+            db.create_all()
+        except Exception as e:
+            app.logger.error(f"Error creating tables: {e}")
 
 # Function to get the task list from the database
 def get_task_list():
@@ -102,13 +105,15 @@ def remove_task():
         db.session.rollback()
         return render_template('500.html'), 500
 
-# Error handling
+# Error handling for 404 - Page Not Found
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
 
+# Error handling for 500 - Internal Server Error
 @app.errorhandler(500)
 def internal_server_error(e):
+    app.logger.error(f"Server Error: {e}")
     return render_template('500.html'), 500
 
 # Main function to run the Flask app
